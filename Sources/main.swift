@@ -73,9 +73,18 @@ struct ListSymbols: ParsableCommand {
         // Get canonical symbol occurrence to find USR
         indexStoreDB.forEachCanonicalSymbolOccurrence(byName: "BazelView") { occurrence in
             let usr = occurrence.symbol.usr
+            let loc = occurrence.location
+            let role = occurrence.roles
+            let provider = occurrence.symbolProvider
             symbolUSRs["BazelView"] = usr
             print("Symbol: BazelView")
             print("  USR: \(usr)")
+            print("  Location: \(loc)")
+            print("  Role: \(role)")
+            print("  Provider: \(provider)")
+            for relation in occurrence.relations {
+                print("  Relation: \(relation)")
+            }
             return false  // Only need the first canonical occurrence
         }
 
