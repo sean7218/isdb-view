@@ -24,28 +24,22 @@ struct ListSymbols: ParsableCommand {
     var databasePath: String
 
     @Option(name: .shortAndLong, help: "Path to the IndexStore library")
-    var libraryPath: String
-
-    @Flag(name: .shortAndLong, help: "Show verbose output")
-    var verbose = false
-
-    @Option(name: .shortAndLong, help: "Filter symbols by name pattern")
-    var filter: String?
-
-    @Option(name: .shortAndLong, help: "Limit number of results")
-    var limit: Int?
-
-    @Flag(help: "Show symbol details (kind, location, etc.)")
-    var details = false
+    var libraryPath: String = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib"
 
     func run() throws {
-        if verbose {
-            print("Opening IndexStore database at: \(databasePath)")
-        }
+        print("Opening IndexStore database at: \(databasePath)")
 
         // Verify database path exists
         guard FileManager.default.fileExists(atPath: databasePath) else {
             throw ValidationError("IndexStore database not found at path: \(databasePath)")
+        }
+
+        // Create IndexStore library
+        let library: IndexStoreLibrary
+        do {
+            library = try IndexStoreLibrary(dylibPath: libraryPath)
+        } catch {
+            throw ValidationError("Failed to load IndexStore library: \(error.localizedDescription)")
         }
 
         // Open the IndexStore database
@@ -54,16 +48,14 @@ struct ListSymbols: ParsableCommand {
             indexStoreDB = try IndexStoreDB(
                 storePath: storePath,
                 databasePath: databasePath,
-                library: libraryPath
+                library: library
             )
         } catch {
             throw ValidationError(
                 "Failed to open IndexStore database: \(error.localizedDescription)")
         }
 
-        if verbose {
-            print("Successfully opened IndexStore database")
-        }
+        print("Successfully opened IndexStore database")
 
         // Enumerate all symbols
         indexStoreDB.forEachSymbolName { name in
