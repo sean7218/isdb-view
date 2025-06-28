@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "indexstore-db-viewer",
     dependencies: [
-        .package(url: "https://github.com/swiftlang/indexstore-db", from: "1.0.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0")
+        .package(url: "https://github.com/swiftlang/indexstore-db.git", branch: "main"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
