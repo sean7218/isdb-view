@@ -5,7 +5,7 @@ import IndexStoreDB
 @main
 struct IndexStoreDBViewer: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "idbview",
+        commandName: "view-indexdb",
         abstract: "A tool for viewing IndexStore database contents",
         subcommands: [ListSymbols.self]
     )
@@ -17,11 +17,14 @@ struct ListSymbols: ParsableCommand {
         abstract: "List all symbols in the IndexStore database"
     )
 
-    @Argument(help: "Path to the IndexStore")
+    @Option(name: .shortAndLong, help: "Path to the IndexStore")
     var storePath: String
 
-    @Argument(help: "Path to the IndexStore database")
+    @Option(name: .shortAndLong, help: "Path to the IndexStore database")
     var databasePath: String
+
+    @Option(name: .shortAndLong, help: "Path to the IndexStore library")
+    var libraryPath: String
 
     @Flag(name: .shortAndLong, help: "Show verbose output")
     var verbose = false
@@ -51,7 +54,7 @@ struct ListSymbols: ParsableCommand {
             indexStoreDB = try IndexStoreDB(
                 storePath: storePath,
                 databasePath: databasePath,
-                library: nil
+                library: libraryPath
             )
         } catch {
             throw ValidationError(
@@ -62,12 +65,10 @@ struct ListSymbols: ParsableCommand {
             print("Successfully opened IndexStore database")
         }
 
-        var symbolCount = 0
-        var filteredCount = 0
-
         // Enumerate all symbols
-        try indexStoreDB.forEachSymbolName { name in
+        indexStoreDB.forEachSymbolName { name in
             print(name)
+            return true
         }
     }
 }
