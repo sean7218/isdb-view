@@ -37,22 +37,65 @@ struct ListSymbols: ParsableCommand {
             print("Opening IndexStore database at: \(databasePath)")
         }
         
-        // TODO: Implement IndexStore database symbol listing
-        print("Listing symbols from database: \(databasePath)")
-        
-        if let filterPattern = filter {
-            print("Filter pattern: \(filterPattern)")
+        // Verify database path exists
+        guard FileManager.default.fileExists(atPath: databasePath) else {
+            throw ValidationError("IndexStore database not found at path: \(databasePath)")
         }
         
-        if let resultLimit = limit {
-            print("Result limit: \(resultLimit)")
+        // Open the IndexStore database
+        let indexStoreDB: IndexStoreDB
+        do {
+            indexStoreDB = try IndexStoreDB(storePath: databasePath)
+        } catch {
+            throw ValidationError("Failed to open IndexStore database: \(error.localizedDescription)")
         }
         
-        if details {
-            print("Showing detailed symbol information")
+        if verbose {
+            print("Successfully opened IndexStore database")
         }
         
-        // Placeholder for actual IndexStore integration
-        print("Symbol listing functionality will be implemented here")
+        var symbolCount = 0
+        var filteredCount = 0
+        
+        // Enumerate all symbols
+        try indexStoreDB.forEachSymbols { symbol in
+            symbolCount += 1
+            
+            // Apply filter if specified
+            if let filterPattern = filter {
+                if !symbol.name.contains(filterPattern) {
+                    return true // Continue enumeration
+                }
+            }
+            
+            filteredCount += 1
+            
+            // Check limit
+            if let resultLimit = limit, filteredCount > resultLimit {
+                return false // Stop enumeration
+            }
+            
+            // Output symbol information
+            if details {
+                print("Symbol: \(symbol.name)")
+                print("  Kind: \(symbol.kind)")
+                print("  USR: \(symbol.usr)")
+                if let codegen = symbol.codegen {
+                    print("  Codegen: \(codegen)")
+                }
+                print("---")
+            } else {
+                print(symbol.name)
+            }
+            
+            return true // Continue enumeration
+        }
+        
+        if verbose {
+            print("\nTotal symbols in database: \(symbolCount)")
+            if filter != nil {
+                print("Symbols matching filter: \(filteredCount)")
+            }
+        }
     }
 }
