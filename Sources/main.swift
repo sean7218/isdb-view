@@ -24,7 +24,8 @@ struct ListSymbols: ParsableCommand {
     var databasePath: String
 
     @Option(name: .shortAndLong, help: "Path to the IndexStore library")
-    var libraryPath: String = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib"
+    var libraryPath: String =
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib"
 
     func run() throws {
         print("Opening IndexStore database at: \(databasePath)")
@@ -39,7 +40,8 @@ struct ListSymbols: ParsableCommand {
         do {
             library = try IndexStoreLibrary(dylibPath: libraryPath)
         } catch {
-            throw ValidationError("Failed to load IndexStore library: \(error.localizedDescription)")
+            throw ValidationError(
+                "Failed to load IndexStore library: \(error.localizedDescription)")
         }
 
         // Open the IndexStore database
@@ -58,14 +60,25 @@ struct ListSymbols: ParsableCommand {
 
         print("Successfully opened IndexStore database")
 
-        // Enumerate all symbols
-        print("Enumerating all symbols...")
+        // First, get all symbol names with their USRs
+        print("Enumerating all symbols with USR and file info...")
         var symbolCount = 0
         indexStoreDB.forEachSymbolName { name in
             print(name)
             symbolCount += 1
             return true
         }
+
+        var symbolUSRs: [String: String] = [:]  // name -> USR mapping
+        // Get canonical symbol occurrence to find USR
+        indexStoreDB.forEachCanonicalSymbolOccurrence(byName: "BazelView") { occurrence in
+            let usr = occurrence.symbol.usr
+            symbolUSRs["BazelView"] = usr
+            print("Symbol: BazelView")
+            print("  USR: \(usr)")
+            return false  // Only need the first canonical occurrence
+        }
+
         print("Total symbols found: \(symbolCount)")
     }
 }
