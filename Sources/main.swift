@@ -48,7 +48,8 @@ struct ListSymbols: ParsableCommand {
             indexStoreDB = try IndexStoreDB(
                 storePath: storePath,
                 databasePath: databasePath,
-                library: library
+                library: library,
+                waitUntilDoneInitializing: true
             )
         } catch {
             throw ValidationError(
@@ -58,9 +59,13 @@ struct ListSymbols: ParsableCommand {
         print("Successfully opened IndexStore database")
 
         // Enumerate all symbols
+        print("Enumerating all symbols...")
+        var symbolCount = 0
         indexStoreDB.forEachSymbolName { name in
             print(name)
+            symbolCount += 1
             return true
         }
+        print("Total symbols found: \(symbolCount)")
     }
 }

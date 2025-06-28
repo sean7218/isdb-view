@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Swift Package Manager project for an IndexStore database viewer tool that depends on [indexstore-db](https://github.com/swiftlang/indexstore-db) to view database contents.
+This is a Swift Package Manager project for `isdb-view`, a CLI tool for viewing IndexStore database contents. It depends on IndexStoreDB library to query and display symbol information from Xcode's index stores.
 
 ## Build System & Commands
 
@@ -14,8 +14,8 @@ This project uses Swift Package Manager (SPM). Common commands:
 # Build the project
 swift build
 
-# Run the executable
-swift run
+# Run the executable with arguments
+swift run isdb-view list-symbols --store-path /path/to/.index-store --database-path /path/to/.index-db --library-path /path/to/libIndexStore.dylib
 
 # Build in release mode
 swift build -c release
@@ -32,19 +32,30 @@ swift package generate-xcodeproj
 
 ## Project Structure
 
-- `Package.swift` - Swift Package Manager manifest file
-- `Sources/main.swift` - Main executable entry point (currently a placeholder)
-- No dependencies are currently declared in Package.swift
+- `Package.swift` - Swift Package Manager manifest declaring dependencies on IndexStoreDB and ArgumentParser
+- `Sources/main.swift` - Main executable with command-line interface using ArgumentParser
+- `Package.resolved` - Locked dependency versions
 
 ## Architecture Notes
 
-- This is a simple executable target with no current dependencies
-- The main.swift file contains only a "Hello, world!" placeholder
-- The project is intended to integrate with indexstore-db for database viewing functionality
-- Swift 6.1 toolchain is required as specified in Package.swift
+### Dependencies
+- **IndexStoreDB** (from swiftlang/indexstore-db): Core library for reading IndexStore databases
+- **ArgumentParser** (from Apple): Command-line argument parsing framework
+- **swift-lmdb** (transitive dependency): Database backend used by IndexStoreDB
+
+### Command Structure
+The CLI uses a hierarchical command structure:
+- Root command: `IndexStoreDBViewer` (commandName: "view-indexdb")
+- Subcommand: `ListSymbols` for enumerating all symbols in an IndexStore database
+
+### Key Components
+- **IndexStoreLibrary**: Wrapper around the native IndexStore dynamic library (libIndexStore.dylib)
+- **IndexStoreDB**: Main interface for querying the IndexStore database
+- **Command-line options**: Requires store path, database path, and library path (defaults to Xcode toolchain location)
 
 ## Development Notes
 
-- The project appears to be in early development stage
-- No external dependencies are currently configured despite the README mentioning indexstore-db dependency
-- No tests are currently defined in the package manifest
+- Swift 6.1 toolchain is required
+- Default library path assumes standard Xcode installation at `/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libIndexStore.dylib`
+- The tool validates file existence before attempting to open databases
+- Error handling includes user-friendly validation messages for missing files or library loading failures
