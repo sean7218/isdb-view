@@ -5,7 +5,7 @@ A Swift CLI tool for viewing and exploring IndexStore database contents. This to
 ## Features
 
 - **List Symbols**: Enumerate all symbols with their USRs (Unified Symbol Resolution) and locations
-- **List Files**: Display all files indexed in the database
+- **Find Symbol**: Search for specific symbols by name and display detailed information
 - **Symbol Details**: Show symbol relationships, roles, and providers
 
 ## Installation
@@ -33,10 +33,11 @@ swift run isdb-view list-symbols \
     --library-path /path/to/libIndexStore.dylib
 ```
 
-### List All Files
+### Find a Specific Symbol
 
 ```bash
-swift run isdb-view list-files \
+swift run isdb-view find-symbol \
+    --name "MyClassName" \
     --store-path /path/to/.index-store \
     --database-path /path/to/.index-db \
     --library-path /path/to/libIndexStore.dylib
@@ -47,6 +48,7 @@ swift run isdb-view list-files \
 - `--store-path` (`-s`): Path to the IndexStore directory (usually `.index-store`)
 - `--database-path` (`-d`): Path to the IndexStore database directory (usually `.index-db`)
 - `--library-path` (`-l`): Path to the IndexStore library (defaults to Xcode's libIndexStore.dylib)
+- `--name` (`-n`): Symbol name to search for (required for find-symbol command)
 
 ### Default Library Path
 
@@ -70,32 +72,32 @@ xcodebuild -project YourProject.xcodeproj -scheme YourScheme
 swift run isdb-view list-symbols \
     --store-path ./DerivedData/YourProject/Build/Intermediates.noindex/YourProject.build/Debug/YourTarget.build/Objects-normal/arm64/.index-store \
     --database-path ./DerivedData/YourProject/Index.noindex/DataStore
+
+# Or find a specific symbol
+swift run isdb-view find-symbol \
+    --name "MyViewController" \
+    --store-path ./DerivedData/YourProject/Build/Intermediates.noindex/YourProject.build/Debug/YourTarget.build/Objects-normal/arm64/.index-store \
+    --database-path ./DerivedData/YourProject/Index.noindex/DataStore
 ```
 
 ### Typical Output
 
 **List Symbols:**
 ```
-Symbol: MyClass
-  USR: c:@M@MyModule@objc(cs)MyClass
-  Location: /path/to/MyClass.swift:10:7
-  Role: Definition
-  Provider: swift-frontend
-
-Symbol: myFunction
-  USR: s:8MyModule10myFunctionyyF
-  Location: /path/to/MyFile.swift:25:6
-  Role: Definition
+Enumerating all symbols with USR and file info...
+Total symbols found: 1542
 ```
 
-**List Files:**
+**Find Symbol:**
 ```
-Files in IndexStore database:
-/path/to/project/Sources/File1.swift
-/path/to/project/Sources/File2.swift
-/path/to/project/Sources/Module/File3.swift
-
-Total files found: 3
+Opening IndexStore database at: /path/to/.index-db
+Successfully opened IndexStore database
+Symbol: MyViewController
+  USR: s:8MyModule16MyViewControllerC
+  Location: /path/to/MyViewController.swift:15:7
+  Role: Definition
+  Provider: Swift
+  Relation: [related symbol information]
 ```
 
 ## Dependencies
